@@ -4,91 +4,56 @@
 #include "stdio.h"
 #include <fstream>
 #include <sstream>
+#include <string_view>
 using namespace Arieo;
 
 typedef int (*MAIN_ENTRY_FUN)(void*);
 
 int main(int argc, char *argv[])
 {
-    // load manifest from first argument
-    if (argc < 2)
+    // Parse command line arguments
+    std::string manifest_path;
+    std::string engine_path;
+
+    for (int i = 1; i < argc; ++i)
     {
-        printf("Usage: %s <manifest_path>\n", argv[0]);
+        std::string_view arg(argv[i]);
+        if (arg.starts_with("--manifest="))
+        {
+            manifest_path = arg.substr(11);
+        }
+        else if (arg.starts_with("--engine-path="))
+        {
+            engine_path = arg.substr(14);
+        }
+    }
+
+    if (manifest_path.empty())
+    {
+        printf("Usage: %s --manifest=<manifest-path> [--engine-path=<engine-path>]\n", argv[0]);
         return -1;
     }
 
-    std::filesystem::path manifest_file_path = std::filesystem::absolute(std::filesystem::path(argv[1]));
+    std::filesystem::path manifest_file_path = std::filesystem::absolute(std::filesystem::path(manifest_path));
     Arieo::Core::SystemUtility::Environment::setEnvironmentValue("APP_MANIFEST_PATH", manifest_file_path.string());
 
-    // Load main entry module from manifest-specified path
-    std::string main_module_path;
+    if (engine_path.empty() == false)
     {
-        // Read manifest file content
-        std::ifstream manifest_file(manifest_file_path);
-        if (!manifest_file.is_open())
-        {
-            printf("Cannot open manifest file: %s\r\n", manifest_file_path.string().c_str());
-            return -1;
-        }
-        std::stringstream buffer;
-        buffer << manifest_file.rdbuf();
-        std::string manifest_content = buffer.str();
-
-        // Parse YAML
-        Core::ConfigNode config_node = Core::ConfigFile::Load(manifest_content);
-        if (config_node.IsNull())
-        {
-            printf("Failed to parse manifest file: %s\r\n", manifest_file_path.string().c_str());
-            return -1;
-        }
-
-        // Get host OS name and navigate to the appropriate node
-        std::string host_os_name = Core::SystemUtility::getHostOSName();
-        Core::ConfigNode system_node = config_node["app"]["host_os"][host_os_name];
-        if (!system_node.IsDefined())
-        {
-            printf("Cannot find 'app.host_os.%s' in manifest: %s\r\n", host_os_name.c_str(), manifest_file_path.string().c_str());
-            return -1;
-        }
-
-        // Set environments from manifest before loading any libs
-        Core::ConfigNode env_node = system_node["environments"];
-        if (env_node.IsDefined())
-        {
-            for (auto env_iter = env_node.begin(); env_iter != env_node.end(); ++env_iter)
-            {
-                std::string env_name = env_iter->first.as<std::string>();
-                if (env_iter->second.IsSequence())
-                {
-                    // Prepend to existing environment
-                    for (auto value_iter = env_iter->second.begin(); value_iter != env_iter->second.end(); ++value_iter)
-                    {
-                        std::string append_value = value_iter->as<std::string>();
-                        Core::SystemUtility::Environment::prependEnvironmentValue(
-                            env_name,
-                            Core::SystemUtility::FileSystem::getFormalizedPath(append_value));
-                    }
-                }
-                else
-                {
-                    // Set environment value
-                    std::string env_value = env_iter->second.as<std::string>();
-                    Core::SystemUtility::Environment::setEnvironmentValue(
-                        env_name,
-                        Core::SystemUtility::FileSystem::getFormalizedPath(env_value));
-                }
-            }
-        }
-
-        // Get main_module path from manifest
-        Core::ConfigNode main_module_node = system_node["main_module"];
-        if (!main_module_node.IsDefined())
-        {
-            printf("Cannot find 'app.host_os.%s.main_module' in manifest: %s\r\n", host_os_name.c_str(), manifest_file_path.string().c_str());
-            return -1;
-        }
-        main_module_path = main_module_node.as<std::string>();
+        std::filesystem::path engine_file_path = std::filesystem::absolute(std::filesystem::path(engine_path));
+        Arieo::Core::SystemUtility::Environment::setEnvironmentValue("ARIEO_ENGINE_PATH", engine_file_path.string());
     }
+    else
+    {
+        // Use default engine path (same directory as executable)
+        std::filesystem::path exe_path = Arieo::Core::SystemUtility::FileSystem::getFormalizedPath(
+            "${EXE_DIR}../../../../../02_engine"
+        );
+    }
+
+    // Load main entry module from manifest-specified path
+    std::string main_module_path = Arieo::Core::SystemUtility::FileSystem::getFormalizedPath(
+        "$ENV{ARIEO_ENGINE_PATH}/Arieo-Module-Main/${PLATFORM}/lib/Release/arieo_main_module" + std::string(Arieo::Core::SystemUtility::Lib::getDymLibFileExtension())
+    );
 
     std::filesystem::path main_entry_lib_path = Core::SystemUtility::FileSystem::getFormalizedPath(main_module_path);
 
