@@ -7,7 +7,8 @@
 
 plugins {
     // Apply the foojay-resolver plugin to allow automatic download of JDKs
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
+    // Commented out due to plugin resolution issues
+    // id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
 }
 
 
