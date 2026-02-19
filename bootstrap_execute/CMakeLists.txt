@@ -7,11 +7,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         PROJECT_TYPE bootstrap
 
         DEPENDENCIES
-            PACKAGES
+            ARIEO_PACKAGES
                 Arieo-Core
                 Arieo-Interface-RHI
                 Arieo-Interface-Archive
                 Arieo-Interface-FileLoader
+            THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
             INTERFACES
@@ -24,7 +25,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
         SOURCES
             CXX_SOURCES
-                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
+                ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     arieo_engine_project(
@@ -32,11 +33,12 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         PROJECT_TYPE bootstrap
 
         DEPENDENCIES
-            PACKAGES
+            ARIEO_PACKAGES
                 Arieo-Core
                 Arieo-Interface-RHI
                 Arieo-Interface-Archive
                 Arieo-Interface-FileLoader
+            THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
             INTERFACES
@@ -51,7 +53,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
         SOURCES
             CXX_SOURCES
-                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
+                ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     arieo_engine_project(
@@ -59,11 +61,12 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
         PROJECT_TYPE bootstrap
 
         DEPENDENCIES
-            PACKAGES
+            ARIEO_PACKAGES
                 Arieo-Core
                 Arieo-Interface-RHI
                 Arieo-Interface-Archive
                 Arieo-Interface-FileLoader
+            THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
             INTERFACES
@@ -78,7 +81,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
 
         SOURCES
             CXX_SOURCES
-                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
+                ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     arieo_engine_project(
@@ -86,11 +89,12 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         PROJECT_TYPE bootstrap
 
         DEPENDENCIES
-            PACKAGES
+            ARIEO_PACKAGES
                 Arieo-Core
                 Arieo-Interface-RHI
                 Arieo-Interface-Archive
                 Arieo-Interface-FileLoader
+            THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
             INTERFACES
@@ -103,7 +107,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
         SOURCES
             CXX_SOURCES
-                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
+                ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 endif()
 

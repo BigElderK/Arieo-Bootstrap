@@ -38,23 +38,23 @@ message(STATUS "  APK output directory: ${APK_OUTPUT_DIR}")
 
 # Determine gradlew executable based on platform
 if(WIN32)
-    set(GRADLEW_CMD "${CMAKE_CURRENT_SOURCE_DIR}/gradlew.bat")
+    set(GRADLEW_CMD "${CMAKE_CURRENT_LIST_DIR}/gradlew.bat")
 else()
-    set(GRADLEW_CMD "${CMAKE_CURRENT_SOURCE_DIR}/gradlew")
+    set(GRADLEW_CMD "${CMAKE_CURRENT_LIST_DIR}/gradlew")
 endif()
 
 # Main build target - builds based on current configuration
 # Use --no-daemon to prevent Gradle daemon from keeping the subprocess alive after build completes
 add_custom_target(arieo_bootstrap_android ALL
     COMMAND ${GRADLEW_CMD} ${GRADLE_BUILD_TASK} --no-daemon
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     COMMENT "Building Arieo Bootstrap Android (${ANDROID_BUILD_TYPE})"
     VERBATIM
 )
 
 # APK source paths
-set(APK_DEBUG_SRC "${CMAKE_CURRENT_SOURCE_DIR}/app/build/outputs/apk/debug/app-debug.apk")
-set(APK_RELEASE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/app/build/outputs/apk/release/app-release-unsigned.apk")
+set(APK_DEBUG_SRC "${CMAKE_CURRENT_LIST_DIR}/app/build/outputs/apk/debug/app-debug.apk")
+set(APK_RELEASE_SRC "${CMAKE_CURRENT_LIST_DIR}/app/build/outputs/apk/release/app-release-unsigned.apk")
 
 # Install APK to install prefix based on build type
 if(ANDROID_BUILD_TYPE STREQUAL "Debug")
