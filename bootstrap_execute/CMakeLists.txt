@@ -5,89 +5,105 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     arieo_engine_project(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
+
+        DEPENDENCIES
+            PACKAGES
+                Arieo-Core
+                Arieo-Interface-RHI
+                Arieo-Interface-Archive
+                Arieo-Interface-FileLoader
+                gtest
+                yaml-cpp
+            INTERFACES
+                Arieo-Interface-RHI::arieo_rhi_interface
+                Arieo-Interface-Archive::arieo_archive_interface
+                Arieo-Interface-FileLoader::arieo_file_loader_interface
+            PRIVATE_LIBS
+                Arieo-Core::arieo_core
+                yaml-cpp::yaml-cpp
+
         SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
-        INTERFACES
-            Arieo-Interface-RHI::arieo_rhi_interface
-            Arieo-Interface-Archive::arieo_archive_interface
-            Arieo-Interface-FileLoader::arieo_file_loader_interface
-        PACKAGES
-            Arieo-Core
-            Arieo-Interface-RHI
-            Arieo-Interface-Archive
-            Arieo-Interface-FileLoader
-            gtest
-            yaml-cpp
-        PRIVATE_LIBS
-            Arieo-Core::arieo_core
-            yaml-cpp::yaml-cpp
+            CXX_SOURCES
+                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     arieo_engine_project(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
+
+        DEPENDENCIES
+            PACKAGES
+                Arieo-Core
+                Arieo-Interface-RHI
+                Arieo-Interface-Archive
+                Arieo-Interface-FileLoader
+                gtest
+                yaml-cpp
+            INTERFACES
+                Arieo-Interface-RHI::arieo_rhi_interface
+                Arieo-Interface-Archive::arieo_archive_interface
+                Arieo-Interface-FileLoader::arieo_file_loader_interface
+            PRIVATE_LIBS
+                Arieo-Core::arieo_core
+                yaml-cpp::yaml-cpp
+            EXTERNAL_LIBS
+                $ENV{DEVCRAFT_WORKSPACE}/llvm/llvm-21/${TARGET_TRIPLE}/lib/${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu/*
+
         SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
-        INTERFACES
-            Arieo-Interface-RHI::arieo_rhi_interface
-            Arieo-Interface-Archive::arieo_archive_interface
-            Arieo-Interface-FileLoader::arieo_file_loader_interface
-        PACKAGES
-            Arieo-Core
-            Arieo-Interface-RHI
-            Arieo-Interface-Archive
-            Arieo-Interface-FileLoader
-            gtest
-            yaml-cpp
-        PRIVATE_LIBS
-            Arieo-Core::arieo_core
-            yaml-cpp::yaml-cpp
-        EXTERNAL_LIBS
-            $ENV{DEVCRAFT_WORKSPACE}/llvm/llvm-21/${TARGET_TRIPLE}/lib/${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu/*
+            CXX_SOURCES
+                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     arieo_engine_project(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
+
+        DEPENDENCIES
+            PACKAGES
+                Arieo-Core
+                Arieo-Interface-RHI
+                Arieo-Interface-Archive
+                Arieo-Interface-FileLoader
+                gtest
+                yaml-cpp
+            INTERFACES
+                Arieo-Interface-RHI::arieo_rhi_interface
+                Arieo-Interface-Archive::arieo_archive_interface
+                Arieo-Interface-FileLoader::arieo_file_loader_interface
+            PRIVATE_LIBS
+                Arieo-Core::arieo_core
+                yaml-cpp::yaml-cpp
+            EXTERNAL_LIBS
+                ${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-android/*.so
+
         SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
-        INTERFACES
-            Arieo-Interface-RHI::arieo_rhi_interface
-            Arieo-Interface-Archive::arieo_archive_interface
-            Arieo-Interface-FileLoader::arieo_file_loader_interface
-        PACKAGES
-            Arieo-Core
-            Arieo-Interface-RHI
-            Arieo-Interface-Archive
-            Arieo-Interface-FileLoader
-            gtest
-            yaml-cpp
-        PRIVATE_LIBS
-            Arieo-Core::arieo_core
-            yaml-cpp::yaml-cpp
-        EXTERNAL_LIBS
-            ${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-android/*.so
+            CXX_SOURCES
+                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     arieo_engine_project(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
+
+        DEPENDENCIES
+            PACKAGES
+                Arieo-Core
+                Arieo-Interface-RHI
+                Arieo-Interface-Archive
+                Arieo-Interface-FileLoader
+                gtest
+                yaml-cpp
+            INTERFACES
+                Arieo-Interface-RHI::arieo_rhi_interface
+                Arieo-Interface-Archive::arieo_archive_interface
+                Arieo-Interface-FileLoader::arieo_file_loader_interface
+            PRIVATE_LIBS
+                Arieo-Core::arieo_core
+                yaml-cpp::yaml-cpp
+
         SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
-        INTERFACES
-            Arieo-Interface-RHI::arieo_rhi_interface
-            Arieo-Interface-Archive::arieo_archive_interface
-            Arieo-Interface-FileLoader::arieo_file_loader_interface
-        PACKAGES
-            Arieo-Core
-            Arieo-Interface-RHI
-            Arieo-Interface-Archive
-            Arieo-Interface-FileLoader
-            gtest
-            yaml-cpp
-        PRIVATE_LIBS
-            Arieo-Core::arieo_core
-            yaml-cpp::yaml-cpp
+            CXX_SOURCES
+                ${CMAKE_CURRENT_SOURCE_DIR}/private/src/*.cpp
     )
 endif()
 

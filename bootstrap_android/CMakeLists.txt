@@ -44,8 +44,9 @@ else()
 endif()
 
 # Main build target - builds based on current configuration
+# Use --no-daemon to prevent Gradle daemon from keeping the subprocess alive after build completes
 add_custom_target(arieo_bootstrap_android ALL
-    COMMAND ${GRADLEW_CMD} ${GRADLE_BUILD_TASK}
+    COMMAND ${GRADLEW_CMD} ${GRADLE_BUILD_TASK} --no-daemon
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Building Arieo Bootstrap Android (${ANDROID_BUILD_TYPE})"
     VERBATIM
