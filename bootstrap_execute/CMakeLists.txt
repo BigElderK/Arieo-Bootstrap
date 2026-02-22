@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.31)
 
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    arieo_engine_project(
+    ARIEO_ENGINE_PROJECT(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
 
@@ -15,11 +15,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
             THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
-            INTERFACES
+            PRIVATE_LIBS
                 Arieo-Interface-RHI::arieo_rhi_interface
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
-            PRIVATE_LIBS
                 Arieo-Core::arieo_core
                 yaml-cpp::yaml-cpp
 
@@ -28,7 +27,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    arieo_engine_project(
+    ARIEO_ENGINE_PROJECT(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
 
@@ -41,11 +40,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
-            INTERFACES
+            PRIVATE_LIBS
                 Arieo-Interface-RHI::arieo_rhi_interface
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
-            PRIVATE_LIBS
                 Arieo-Core::arieo_core
                 yaml-cpp::yaml-cpp
             EXTERNAL_LIBS
@@ -56,7 +54,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
-    arieo_engine_project(
+    ARIEO_ENGINE_PROJECT(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
 
@@ -69,11 +67,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
             THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
-            INTERFACES
+            PRIVATE_LIBS
                 Arieo-Interface-RHI::arieo_rhi_interface
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
-            PRIVATE_LIBS
                 Arieo-Core::arieo_core
                 yaml-cpp::yaml-cpp
             EXTERNAL_LIBS
@@ -84,7 +81,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    arieo_engine_project(
+    ARIEO_ENGINE_PROJECT(
         arieo_bootstrap
         PROJECT_TYPE bootstrap
 
@@ -97,11 +94,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
             THIRDPARTY_PACKAGES
                 gtest
                 yaml-cpp
-            INTERFACES
+            PRIVATE_LIBS
                 Arieo-Interface-RHI::arieo_rhi_interface
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
-            PRIVATE_LIBS
                 Arieo-Core::arieo_core
                 yaml-cpp::yaml-cpp
 
