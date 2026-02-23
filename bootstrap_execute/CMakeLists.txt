@@ -115,45 +115,54 @@ set_target_properties(arieo_bootstrap PROPERTIES
   INSTALL_RPATH "\$ORIGIN/libs"
 )
 
-# Copy libc++ to output dir for android builds
-# if(ARIEO_HOST_OS STREQUAL "android")
-#     # Copy libc++ to output dir, make build failed if not present
-#     set(libcxx_src_file "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-android/libc++_shared.so")
-#     set(libcxx_output_file "${ARIEO_LIBS_OUTPUT_DIRECTORY}/libc++_shared.so")
-#     add_custom_command(
-#         OUTPUT ${libcxx_output_file}
-#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#             ${libcxx_src_file}
-#             ${libcxx_output_file}
-#         DEPENDS ${libcxx_src_file}
-#     )
-#     add_custom_target(
-#         CopyLibCXXShared
-#         DEPENDS ${libcxx_output_file}
-#     )
-#     add_dependencies(
-#         arieo_bootstrap
-#         CopyLibCXXShared
-#     )
-# elseif(ARIEO_HOST_OS STREQUAL "ubuntu" OR ARIEO_HOST_OS STREQUAL "raspberry")
-#     # Copy libc++ to output dir, make build failed if not present
-#     set(libcxx_src_file "$ENV{DEVCRAFT_WORKSPACE}/llvm/llvm-21/${TARGET_TRIPLE}/lib/${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu/libc++.so")
-#     set(libcxx_output_file "${ARIEO_LIBS_OUTPUT_DIRECTORY}/libc++.so")
-#     add_custom_command(
-#         OUTPUT ${libcxx_output_file}
-#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#             ${libcxx_src_file}
-#             ${libcxx_output_file}
-#         DEPENDS ${libcxx_src_file}
-#     )
-#     add_custom_target(
-#         CopyLibCXXShared
-#         DEPENDS ${libcxx_output_file}
-#     )
-#     add_dependencies(
-#         arieo_bootstrap
-#         CopyLibCXXShared
-#     )
-# endif()
+
+
+if(ARIEO_HOST_OS STREQUAL "android")
+    # Copy libc++ to output dir for android builds
+    get_target_property(bootstrap_runtime_output_dir arieo_bootstrap RUNTIME_OUTPUT_DIRECTORY)
+
+    # Copy libc++ into same path of bootstrap binary
+    set(libcxx_src_file "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-android/libc++_shared.so")
+    set(libcxx_dest_file "${bootstrap_runtime_output_dir}/libc++_shared.so")
+    add_custom_command(
+        OUTPUT "${libcxx_dest_file}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${bootstrap_runtime_output_dir}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${libcxx_src_file}"
+            "${libcxx_dest_file}"
+        DEPENDS "${libcxx_src_file}"
+        COMMENT "Copying libc++_shared.so -> ${libcxx_dest_file}"
+    )
+    add_custom_target(copy_libcxx_shared ALL DEPENDS "${libcxx_dest_file}")
+    add_dependencies(arieo_bootstrap copy_libcxx_shared)
+
+    install(FILES "${libcxx_src_file}"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${ARIEO_PACKAGE_CATEGORY}/${ARIEO_PACKAGE_NAME}/${ARIEO_BUILD_CONFIGURE_PRESET}/bin/${CMAKE_BUILD_TYPE}"
+    )
+
+elseif(ARIEO_HOST_OS STREQUAL "ubuntu" OR ARIEO_HOST_OS STREQUAL "raspberry")
+    # Copy libc++ to output dir for android builds
+    get_target_property(bootstrap_runtime_output_dir arieo_bootstrap RUNTIME_OUTPUT_DIRECTORY)
+
+    # Copy libc++ into same path of bootstrap binary
+    set(libcxx_src_file "$ENV{DEVCRAFT_WORKSPACE}/llvm/llvm-21/${TARGET_TRIPLE}/lib/${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu/libc++.so")
+    set(libcxx_dest_file "${bootstrap_runtime_output_dir}/libc++.so")
+    add_custom_command(
+        OUTPUT "${libcxx_dest_file}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${bootstrap_runtime_output_dir}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${libcxx_src_file}"
+            "${libcxx_dest_file}"
+        DEPENDS "${libcxx_src_file}"
+        COMMENT "Copying libc++.so -> ${libcxx_dest_file}"
+    )
+    add_custom_target(copy_libcxx ALL DEPENDS "${libcxx_dest_file}")
+    add_dependencies(arieo_bootstrap copy_libcxx)
+
+    install(FILES "${libcxx_src_file}"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${ARIEO_PACKAGE_CATEGORY}/${ARIEO_PACKAGE_NAME}/${ARIEO_BUILD_CONFIGURE_PRESET}/bin/${CMAKE_BUILD_TYPE}"
+    )
+
+endif()
 
 
