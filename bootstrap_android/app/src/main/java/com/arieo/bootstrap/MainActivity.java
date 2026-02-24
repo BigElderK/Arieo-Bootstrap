@@ -19,6 +19,7 @@ public class MainActivity extends GameActivity
     
     // Native method to set environment variable
     public native boolean nativeSetEnvironmentVariable(String name, String value);
+    public native String nativePrepareEngine(String manifestPath);
     
     static 
     {
@@ -29,20 +30,9 @@ public class MainActivity extends GameActivity
             Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
             Method currentApplicationMethod = activityThreadClass.getMethod("currentApplication");
             Application application = (Application) currentApplicationMethod.invoke(null);
-            
+
             if (application != null) {
-                File filesDir = application.getFilesDir();
 
-                //Root path: /data/user/0/... vs /data/data/... (these are actually the same directory on Android — /data/data is a symlink to /data/user/0)
-                // Deploy: /data/data/com.arieo.bootstrap/files
-                // Runtime: /data/user/0/com.arieo.bootstrap/files
-                String libCXXPath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libc++_shared.so";
-                System.load(libCXXPath);
-                Log.d("ArieoEngine", "Loaded libc++_shared.so from files directory: " + libCXXPath);
-
-                String mainModulePath = filesDir.getAbsolutePath() + "/engine/Arieo-Module-Main/android.armv8/bin/RelWithDebInfo/libarieo_main_module.so";
-                System.load(mainModulePath);
-                Log.d("ArieoEngine", "Loaded arieo_main_module from files directory: " + mainModulePath);
             } else {
                 throw new RuntimeException("Could not get application context");
             }
@@ -56,6 +46,23 @@ public class MainActivity extends GameActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
+        File filesDir = getFilesDir();
+
+        //Root path: /data/user/0/... vs /data/data/... (these are actually the same directory on Android — /data/data is a symlink to /data/user/0)
+        // Deploy: /data/data/com.arieo.bootstrap/files
+        // Runtime: /data/user/0/com.arieo.bootstrap/files
+        String libCXXPath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libc++_shared.so";
+        System.load(libCXXPath);
+        Log.d("ArieoEngine", "Loaded libc++_shared.so from files directory: " + libCXXPath);
+
+        String bootstrapModulePath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libarieo_bootstrap.so";
+        System.load(bootstrapModulePath);
+        Log.d("ArieoEngine", "Loaded arieo_bootstrap from files directory: " + bootstrapModulePath);
+
+        // String mainModulePath = filesDir.getAbsolutePath() + "/engine/Arieo-Module-Main/android.armv8/bin/RelWithDebInfo/libarieo_main_module.so";
+        // System.load(mainModulePath);
+        // Log.d("ArieoEngine", "Loaded arieo_main_module from files directory: " + mainModulePath);
+
         // Load manifest path
         String applicationManifestFilePath = null;
         {
@@ -71,19 +78,24 @@ public class MainActivity extends GameActivity
                 applicationManifestFilePath = applicationManifestFilePath.replace("$${obb_folder}", obbFolder);
                 Log.d(TAG, "Replaced manifest value: " + applicationManifestFilePath);
             }
-        }
 
-        if(applicationManifestFilePath == null)
-        {
-            Log.e(TAG, "Failed to load application manifest file path from meta-data");
-            return;
+            if(applicationManifestFilePath == null)
+            {
+                Log.e(TAG, "Failed to load application manifest file path from meta-data");
+                return;
+            }
+
+            if(!new File(applicationManifestFilePath).exists())
+            {
+                Log.e(TAG, "Application manifest file does not exist at path: " + applicationManifestFilePath);
+                return;
+            }
         }
 
         // Set real system environment variable using native JNI call
         // Set APP_MANIFEST_PATH and APP_MANIFEST_PATH_DIR environment variables so native code can access them
         {
             Log.d(TAG, "Setting APP_MANIFEST_PATH environment variable to: " + applicationManifestFilePath);
-            
             try {
                 boolean success = nativeSetEnvironmentVariable("APP_MANIFEST_PATH", applicationManifestFilePath)
                 && nativeSetEnvironmentVariable("APP_MANIFEST_DIR", new File(applicationManifestFilePath).getParent());
@@ -130,6 +142,17 @@ public class MainActivity extends GameActivity
                 }
             } catch (UnsatisfiedLinkError e) {
                 Log.e(TAG, "JNI method nativeSetEnvironmentVariable not found", e);
+            }
+        }
+
+        // Load Manifest file and get main module path from it, then load the main module
+        {
+            String mainModulePath = nativePrepareEngine(applicationManifestFilePath);    
+            if(mainModulePath != null) {
+                System.load(mainModulePath);
+                Log.d(TAG, "Loaded main module from manifest path: " + mainModulePath);
+            } else {
+                Log.e(TAG, "Failed to prepare engine with manifest file path: " + applicationManifestFilePath);
             }
         }
 
