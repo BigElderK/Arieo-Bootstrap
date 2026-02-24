@@ -33,7 +33,10 @@ public class MainActivity extends GameActivity
             if (application != null) {
                 File filesDir = application.getFilesDir();
 
-                String libCXXPath = filesDir.getAbsolutePath() + "/engine/libs/libc++_shared.so";
+                //Root path: /data/user/0/... vs /data/data/... (these are actually the same directory on Android — /data/data is a symlink to /data/user/0)
+                // Deploy: /data/data/com.arieo.bootstrap/files
+                // Runtime: /data/user/0/com.arieo.bootstrap/files
+                String libCXXPath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/Release/libc++_shared.so";
                 System.load(libCXXPath);
                 Log.d("ArieoEngine", "Loaded libc++_shared.so from files directory: " + libCXXPath);
 

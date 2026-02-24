@@ -47,12 +47,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
 
     # Main build target - builds based on current configuration
     # Use --no-daemon to prevent Gradle daemon from keeping the subprocess alive after build completes
+    # Use --no-build-cache to ensure Java source changes (e.g. MainActivity.java) are always recompiled
     add_custom_target(
         arieo_bootstrap_android
-        COMMAND ${GRADLEW_CMD} ${GRADLE_BUILD_TASK} --no-daemon
+        COMMAND ${GRADLEW_CMD} ${GRADLE_BUILD_TASK} --no-daemon --no-build-cache
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<IF:$<CONFIG:Debug>,${APK_DEBUG_SRC},${APK_RELEASE_SRC}>
             $<IF:$<CONFIG:Debug>,${APK_DEBUG_OUTPUT},${APK_RELEASE_OUTPUT}>
+        BYPRODUCTS
+            ${APK_DEBUG_SRC}
+            ${APK_RELEASE_SRC}
+            ${APK_DEBUG_OUTPUT}
+            ${APK_RELEASE_OUTPUT}
         DEPENDS ${GRADLEW_CMD}
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         COMMENT "Building Arieo Bootstrap Android (${ANDROID_BUILD_TYPE})"

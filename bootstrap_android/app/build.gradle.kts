@@ -44,6 +44,10 @@ android {
     //     }
     // }
 
+    compileOptions {
+        encoding = "UTF-8"
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
