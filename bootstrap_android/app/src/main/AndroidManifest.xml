@@ -23,7 +23,7 @@
         android:theme="@style/Application.Fullscreen">
 
         <!-- Add custom meta-data here -->
-        <meta-data android:name="arieo.application.manifest" android:value="$${obb_folder}/main.1.com.arieo.bootstrap.obb/app.manifest.yaml" />
+        <meta-data android:name="arieo.application.manifest" android:value="$${obb_folder}/app.manifest.yaml" />
 
         <activity android:name=".MainActivity"
             android:exported="true"

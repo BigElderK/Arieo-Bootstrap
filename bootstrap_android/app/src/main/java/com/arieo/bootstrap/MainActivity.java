@@ -36,11 +36,11 @@ public class MainActivity extends GameActivity
                 //Root path: /data/user/0/... vs /data/data/... (these are actually the same directory on Android — /data/data is a symlink to /data/user/0)
                 // Deploy: /data/data/com.arieo.bootstrap/files
                 // Runtime: /data/user/0/com.arieo.bootstrap/files
-                String libCXXPath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/Release/libc++_shared.so";
+                String libCXXPath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libc++_shared.so";
                 System.load(libCXXPath);
                 Log.d("ArieoEngine", "Loaded libc++_shared.so from files directory: " + libCXXPath);
 
-                String mainModulePath = filesDir.getAbsolutePath() + "/engine/modules/libarieo_main_module.so";
+                String mainModulePath = filesDir.getAbsolutePath() + "/engine/Arieo-Module-Main/android.armv8/bin/RelWithDebInfo/libarieo_main_module.so";
                 System.load(mainModulePath);
                 Log.d("ArieoEngine", "Loaded arieo_main_module from files directory: " + mainModulePath);
             } else {
@@ -56,61 +56,37 @@ public class MainActivity extends GameActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
-        super.onCreate(savedInstanceState);
-        
-        // Log which library loading method was used
-        logLibraryLoadingMethod();
-        
-        // Load arieo.application.manifest from manifest meta-data
-        Log.d(TAG, "MainActivity onCreate() called");
-        
-        String applicationManifest = getArieoApplicationManifest();
-        Log.d(TAG, "Raw application manifest: " + applicationManifest);
-        
-        String obbFolder = getObbFolder();
-        Log.d(TAG, "OBB folder: " + obbFolder);
-        
-        // Set app internal data directory as environment variable - using internal files dir to avoid namespace issues
-        String appInternalDataDir = getFilesDir().getAbsolutePath();
-        Log.d(TAG, "Setting APP_INTERNAL_DATA_DIR environment variable to: " + appInternalDataDir);
-        try {
-            boolean success = nativeSetEnvironmentVariable("APP_INTERNAL_DATA_DIR", appInternalDataDir);
-            if (success) {
-                Log.d(TAG, "Successfully set APP_DATA_DIR environment variable via JNI");
-            } else {
-                Log.e(TAG, "JNI call failed to set APP_INTERNAL_DATA_DIR environment variable");
+        // Load manifest path
+        String applicationManifestFilePath = null;
+        {
+            String obbFolder = getObbFolder();
+            Log.d(TAG, "OBB folder: " + obbFolder);
+
+            String applicationManifest = getArieoApplicationManifest();
+            Log.d(TAG, "Raw application manifest: " + applicationManifest);
+
+            // Replace the placeholder with actual OBB folder path:
+            applicationManifestFilePath = applicationManifest; // Gets "${obb_folder}/arieo_render_test_app"
+            if (applicationManifestFilePath != null && applicationManifestFilePath.contains("$${obb_folder}")) {
+                applicationManifestFilePath = applicationManifestFilePath.replace("$${obb_folder}", obbFolder);
+                Log.d(TAG, "Replaced manifest value: " + applicationManifestFilePath);
             }
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "JNI method nativeSetEnvironmentVariable not found", e);
         }
 
-        // Set app external data directory as environment variable - using internal files dir to avoid namespace issues
-        String appExternalDataDir = getExternalFilesDir(null).getAbsolutePath();
-        Log.d(TAG, "Setting APP_EXTERNAL_DATA_DIR environment variable to: " + appExternalDataDir);
-        try {
-            boolean success = nativeSetEnvironmentVariable("APP_EXTERNAL_DATA_DIR", appExternalDataDir);
-            if (success) {
-                Log.d(TAG, "Successfully set APP_EXTERNAL_DATA_DIR environment variable via JNI");
-            } else {
-                Log.e(TAG, "JNI call failed to set APP_EXTERNAL_DATA_DIR environment variable");
-            }
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "JNI method nativeSetEnvironmentVariable not found", e);
-        }
-
-        // Replace the placeholder with actual OBB folder path:
-        String manifestValue = applicationManifest; // Gets "${obb_folder}/arieo_render_test_app"
-        if (manifestValue != null && manifestValue.contains("$${obb_folder}")) {
-            manifestValue = manifestValue.replace("$${obb_folder}", obbFolder);
-            Log.d(TAG, "Replaced manifest value: " + manifestValue);
+        if(applicationManifestFilePath == null)
+        {
+            Log.e(TAG, "Failed to load application manifest file path from meta-data");
+            return;
         }
 
         // Set real system environment variable using native JNI call
-        if (manifestValue != null) {
-            Log.d(TAG, "Setting APP_MANIFEST_PATH environment variable to: " + manifestValue);
+        // Set APP_MANIFEST_PATH and APP_MANIFEST_PATH_DIR environment variables so native code can access them
+        {
+            Log.d(TAG, "Setting APP_MANIFEST_PATH environment variable to: " + applicationManifestFilePath);
             
             try {
-                boolean success = nativeSetEnvironmentVariable("APP_MANIFEST_PATH", manifestValue);
+                boolean success = nativeSetEnvironmentVariable("APP_MANIFEST_PATH", applicationManifestFilePath)
+                && nativeSetEnvironmentVariable("APP_MANIFEST_DIR", new File(applicationManifestFilePath).getParent());
                 
                 if (success) {
                     Log.d(TAG, "Successfully set APP_MANIFEST_PATH environment variable via JNI");
@@ -123,11 +99,45 @@ public class MainActivity extends GameActivity
             } catch (UnsatisfiedLinkError e) {
                 Log.e(TAG, "JNI method nativeSetEnvironmentVariable not found", e);
             }
-        } else {
-            Log.e(TAG, "arieo.application.manifest meta-data not found or null");
         }
 
+        // Set app internal data directory as environment variable - using internal files dir to avoid namespace issues
+        {
+            String appInternalDataDir = getFilesDir().getAbsolutePath();
+            Log.d(TAG, "Setting APP_INTERNAL_DATA_DIR environment variable to: " + appInternalDataDir);
+            try {
+                boolean success = nativeSetEnvironmentVariable("APP_INTERNAL_DATA_DIR", appInternalDataDir);
+                if (success) {
+                    Log.d(TAG, "Successfully set APP_DATA_DIR environment variable via JNI");
+                } else {
+                    Log.e(TAG, "JNI call failed to set APP_INTERNAL_DATA_DIR environment variable");
+                }
+            } catch (UnsatisfiedLinkError e) {
+                Log.e(TAG, "JNI method nativeSetEnvironmentVariable not found", e);
+            }
+        }
 
+        {
+            // Set app external data directory as environment variable - using internal files dir to avoid namespace issues
+            String appExternalDataDir = getExternalFilesDir(null).getAbsolutePath();
+            Log.d(TAG, "Setting APP_EXTERNAL_DATA_DIR environment variable to: " + appExternalDataDir);
+            try {
+                boolean success = nativeSetEnvironmentVariable("APP_EXTERNAL_DATA_DIR", appExternalDataDir);
+                if (success) {
+                    Log.d(TAG, "Successfully set APP_EXTERNAL_DATA_DIR environment variable via JNI");
+                } else {
+                    Log.e(TAG, "JNI call failed to set APP_EXTERNAL_DATA_DIR environment variable");
+                }
+            } catch (UnsatisfiedLinkError e) {
+                Log.e(TAG, "JNI method nativeSetEnvironmentVariable not found", e);
+            }
+        }
+
+        // Load manifest_file
+        super.onCreate(savedInstanceState);
+
+        // Load arieo.application.manifest from manifest meta-data
+        Log.d(TAG, "MainActivity onCreate() called");
     }
     
     private String getArieoApplicationManifest() {
@@ -169,28 +179,6 @@ public class MainActivity extends GameActivity
         } catch (Exception e) {
             Log.e(TAG, "Error getting OBB folder path", e);
             return null;
-        }
-    }
-    
-    private void logLibraryLoadingMethod() {
-        try {
-            // Check if library was loaded from internal files directory
-            String internalLibPath = getFilesDir().getAbsolutePath() + "/lib/libarieo_main_module.so";
-            File internalLib = new File(internalLibPath);
-            
-            if (internalLib.exists() && internalLib.canRead()) {
-                Log.d(TAG, "arieo_main_module loaded from internal files directory: " + internalLibPath);
-                Log.d(TAG, "Internal library size: " + internalLib.length() + " bytes");
-            } else {
-                Log.d(TAG, "arieo_main_module loaded from APK (internal files version not available)");
-                if (internalLib.exists()) {
-                    Log.w(TAG, "Internal library exists but not readable: " + internalLibPath);
-                } else {
-                    Log.d(TAG, "Internal library does not exist: " + internalLibPath);
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking library loading method", e);
         }
     }
 }
