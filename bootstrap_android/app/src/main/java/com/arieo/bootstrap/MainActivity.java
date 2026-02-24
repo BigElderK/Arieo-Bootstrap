@@ -7,9 +7,11 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.util.Log;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 import android.app.Application;
 import java.lang.reflect.Method;
 
@@ -47,17 +49,46 @@ public class MainActivity extends GameActivity
     protected void onCreate(Bundle savedInstanceState) 
     {
         File filesDir = getFilesDir();
+        String bootstrapINIPath = filesDir.getAbsolutePath() + "/engine/bootstrap.ini";
+        Log.d(TAG, "Bootstrap INI path: " + bootstrapINIPath);
 
-        //Root path: /data/user/0/... vs /data/data/... (these are actually the same directory on Android — /data/data is a symlink to /data/user/0)
-        // Deploy: /data/data/com.arieo.bootstrap/files
-        // Runtime: /data/user/0/com.arieo.bootstrap/files
-        String libCXXPath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libc++_shared.so";
-        System.load(libCXXPath);
-        Log.d("ArieoEngine", "Loaded libc++_shared.so from files directory: " + libCXXPath);
+        // Load LIBCXX_PATH and BOOTSTRAP_PATH from bootstrap.ini
+        {
+            //[bootstrap.ini]
+            //LIBCXX_PATH=/data/data/com.arieo.bootstrap/files/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libc++_shared.so
+            //BOOTSTRAP_PATH=/data/data/com.arieo.bootstrap/files/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libarieo_bootstrap.so
 
-        String bootstrapModulePath = filesDir.getAbsolutePath() + "/engine/Arieo-Bootstrap/android.armv8/bin/RelWithDebInfo/libarieo_bootstrap.so";
-        System.load(bootstrapModulePath);
-        Log.d("ArieoEngine", "Loaded arieo_bootstrap from files directory: " + bootstrapModulePath);
+            //Root path: /data/user/0/... vs /data/data/... (these are actually the same directory on Android — /data/data is a symlink to /data/user/0)
+            // Deploy: /data/data/com.arieo.bootstrap/files
+            // Runtime: /data/user/0/com.arieo.bootstrap/files
+            Properties bootstrapIni = loadBootstrapIni(bootstrapINIPath);
+            if (bootstrapIni == null) {
+                Log.e(TAG, "Failed to load bootstrap.ini from: " + bootstrapINIPath);
+                return;
+            }
+
+            String libCXXPath = bootstrapIni.getProperty("LIBCXX_PATH");
+            String bootstrapModulePath = bootstrapIni.getProperty("BOOTSTRAP_PATH");
+
+            if (libCXXPath == null || libCXXPath.isEmpty()) {
+                Log.e(TAG, "LIBCXX_PATH not found in bootstrap.ini");
+                return;
+            }
+            if (bootstrapModulePath == null || bootstrapModulePath.isEmpty()) {
+                Log.e(TAG, "BOOTSTRAP_PATH not found in bootstrap.ini");
+                return;
+            }
+
+            Log.d(TAG, "LIBCXX_PATH: " + libCXXPath);
+            Log.d(TAG, "BOOTSTRAP_PATH: " + bootstrapModulePath);
+
+            System.load(libCXXPath);
+            Log.d(TAG, "Loaded libc++_shared.so: " + libCXXPath);
+
+            System.load(bootstrapModulePath);
+            Log.d(TAG, "Loaded arieo_bootstrap: " + bootstrapModulePath);
+        }
+
 
         // String mainModulePath = filesDir.getAbsolutePath() + "/engine/Arieo-Module-Main/android.armv8/bin/RelWithDebInfo/libarieo_main_module.so";
         // System.load(mainModulePath);
@@ -146,14 +177,12 @@ public class MainActivity extends GameActivity
         }
 
         // Load Manifest file and get main module path from it, then load the main module
-        {
-            String mainModulePath = nativePrepareEngine(applicationManifestFilePath);    
-            if(mainModulePath != null) {
-                System.load(mainModulePath);
-                Log.d(TAG, "Loaded main module from manifest path: " + mainModulePath);
-            } else {
-                Log.e(TAG, "Failed to prepare engine with manifest file path: " + applicationManifestFilePath);
-            }
+        String mainModulePath = nativePrepareEngine(applicationManifestFilePath);    
+        if(mainModulePath != null) {
+            System.load(mainModulePath);
+            Log.d(TAG, "Loaded main module from manifest path: " + mainModulePath);
+        } else {
+            Log.e(TAG, "Failed to prepare engine with manifest file path: " + applicationManifestFilePath);
         }
 
         // Load manifest_file
@@ -163,6 +192,23 @@ public class MainActivity extends GameActivity
         Log.d(TAG, "MainActivity onCreate() called");
     }
     
+    private Properties loadBootstrapIni(String path) {
+        Properties props = new Properties();
+        File file = new File(path);
+        if (!file.exists()) {
+            Log.e(TAG, "bootstrap.ini not found at: " + path);
+            return null;
+        }
+        try (FileInputStream fis = new FileInputStream(file)) {
+            props.load(fis);
+            Log.d(TAG, "Loaded bootstrap.ini: " + props.toString());
+            return props;
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to read bootstrap.ini: " + e.getMessage());
+            return null;
+        }
+    }
+
     private String getArieoApplicationManifest() {
         try {
             ApplicationInfo appInfo = getPackageManager().getApplicationInfo(
