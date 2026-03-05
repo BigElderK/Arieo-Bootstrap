@@ -127,6 +127,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
     target_link_options(arieo_bootstrap PRIVATE "-sMAIN_MODULE=1")
+    set_target_properties(arieo_bootstrap PROPERTIES SUFFIX ".html")
 endif()
 
 # Set RPATH to find libc++.so in libs folder
@@ -165,7 +166,7 @@ if(ARIEO_HOST_OS STREQUAL "android")
     )
 
 elseif(ARIEO_HOST_OS STREQUAL "ubuntu" OR ARIEO_HOST_OS STREQUAL "raspberry")
-    # Copy libc++ to output dir for android builds
+    # Copy libc++ to output dir for linux builds
     get_target_property(bootstrap_runtime_output_dir arieo_bootstrap RUNTIME_OUTPUT_DIRECTORY)
 
     # Copy libc++ into same path of bootstrap binary
@@ -186,7 +187,6 @@ elseif(ARIEO_HOST_OS STREQUAL "ubuntu" OR ARIEO_HOST_OS STREQUAL "raspberry")
     install(FILES "${libcxx_dest_file}"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${ARIEO_PACKAGE_CATEGORY}/${ARIEO_PACKAGE_NAME}/${ARIEO_BUILD_CONFIGURE_PRESET}/bin/${CMAKE_BUILD_TYPE}"
     )
-
 endif()
 
 
