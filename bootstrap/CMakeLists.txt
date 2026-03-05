@@ -20,7 +20,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
                 Arieo-Core::arieo_core
-                yaml-cpp::yaml-cpp
 
         SOURCES
             CXX_SOURCES
@@ -45,7 +44,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
                 Arieo-Core::arieo_core
-                yaml-cpp::yaml-cpp
             EXTERNAL_LIBS
                 $ENV{DEVCRAFT_WORKSPACE}/llvm/llvm-21/${TARGET_TRIPLE}/lib/${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu/*
 
@@ -72,7 +70,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
                 Arieo-Core::arieo_core
-                yaml-cpp::yaml-cpp
             EXTERNAL_LIBS
                 ${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-android/*.so
 
@@ -100,12 +97,36 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
                 Arieo-Interface-Archive::arieo_archive_interface
                 Arieo-Interface-FileLoader::arieo_file_loader_interface
                 Arieo-Core::arieo_core
-                yaml-cpp::yaml-cpp
 
         SOURCES
             CXX_SOURCES
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    ARIEO_ENGINE_PROJECT(
+        arieo_bootstrap
+        PROJECT_TYPE executable
+
+        DEPENDENCIES
+            ARIEO_PACKAGES
+                Arieo-Core
+                Arieo-Interface-RHI
+                Arieo-Interface-Archive
+                Arieo-Interface-FileLoader
+            THIRDPARTY_PACKAGES
+                gtest
+                yaml-cpp
+            PRIVATE_LIBS
+                Arieo-Interface-RHI::arieo_rhi_interface
+                Arieo-Interface-Archive::arieo_archive_interface
+                Arieo-Interface-FileLoader::arieo_file_loader_interface
+                Arieo-Core::arieo_core
+
+        SOURCES
+            CXX_SOURCES
+                ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
+    )
+    target_link_options(arieo_bootstrap PRIVATE "-sMAIN_MODULE=1")
 endif()
 
 # Set RPATH to find libc++.so in libs folder
