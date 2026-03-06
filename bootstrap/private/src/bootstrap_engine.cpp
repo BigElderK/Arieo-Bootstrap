@@ -11,7 +11,6 @@ std::filesystem::path g_main_module_path;
 
 int prepareEngine(std::string manifest_path)
 {
-    Core::Logger::setDefaultLogger("bootstrap");
     Core::Logger::info("Preparing engine with manifest path: {}", manifest_path);
     std::filesystem::path manifest_file_path = std::filesystem::absolute(std::filesystem::path(manifest_path));
     Arieo::Core::SystemUtility::Environment::setEnvironmentValue("APP_MANIFEST_PATH", manifest_file_path.string());

@@ -126,7 +126,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
             CXX_SOURCES
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
-    target_link_options(arieo_bootstrap PRIVATE "-sMAIN_MODULE=1")
+    target_link_options(arieo_bootstrap PRIVATE "-sMAIN_MODULE=1" "-sASYNCIFY=1")
     set_target_properties(arieo_bootstrap PROPERTIES SUFFIX ".html")
 endif()
 
