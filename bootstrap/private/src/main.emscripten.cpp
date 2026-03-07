@@ -64,27 +64,27 @@ int main(int argc, char *argv[])
     Core::SystemUtility::Environment::setEnvironmentValue("WEB_ROOT", "");
     
     // Preload module paths to ensure they are cached by the browser before main entry module tries to load them.
-    for(std::filesystem::path module_path : manifest.getAllEngineModulePaths())
-    {
-        std::filesystem::path formalized_module_path = Core::SystemUtility::FileSystem::getFormalizedPath(module_path.string());
-        std::string module_url_no_cache = Base::StringUtility::format(
-            "{}?t={}", 
-            formalized_module_path.string(), 
-            long(emscripten_get_now())
-        );
+    // for(std::filesystem::path module_path : manifest.getAllEngineModulePaths())
+    // {
+    //     std::filesystem::path formalized_module_path = Core::SystemUtility::FileSystem::getFormalizedPath(module_path.string());
+    //     std::string module_url_no_cache = Base::StringUtility::format(
+    //         "{}?t={}", 
+    //         formalized_module_path.string(), 
+    //         long(emscripten_get_now())
+    //     );
 
-        Core::Logger::info("Preloading module from URL: {} to {}", module_url_no_cache, formalized_module_path);
-        std::filesystem::create_directories(formalized_module_path.parent_path());
-        emscripten_wget(module_url_no_cache.c_str(), formalized_module_path.string().c_str());
+    //     Core::Logger::info("Preloading module from URL: {} to {}", module_url_no_cache, formalized_module_path);
+    //     std::filesystem::create_directories(formalized_module_path.parent_path());
+    //     emscripten_wget(module_url_no_cache.c_str(), formalized_module_path.string().c_str());
 
-        if (FILE* f = fopen(formalized_module_path.string().c_str(), "r")) { fclose(f); }
-        else
-        {
-            Core::Logger::fatal("emscripten_wget failed: could not open {} in VFS (URL: {})",
-                formalized_module_path.string(), module_url_no_cache);
-            return -1;
-        }
-    }
+    //     if (FILE* f = fopen(formalized_module_path.string().c_str(), "r")) { fclose(f); }
+    //     else
+    //     {
+    //         Core::Logger::fatal("emscripten_wget failed: could not open {} in VFS (URL: {})",
+    //             formalized_module_path.string(), module_url_no_cache);
+    //         return -1;
+    //     }
+    // }
 
     // Print manifest file content
     // if (FILE* f = fopen(manifest_vfs, "r"))

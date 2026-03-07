@@ -62,13 +62,13 @@ int bootstrapEngine()
         return -1;
     }
     
-    Core::Logger::info("1 Loading main entry module from path: {}", main_module_path);
+    Core::Logger::info("Loading main entry module from path: {}", main_module_path);
 
     Arieo::Core::SystemUtility::Lib::LIBTYPE main_module_lib = Arieo::Core::SystemUtility::Lib::loadLibrary(
         main_module_path
     );
 
-    Core::Logger::info("1 End Loading main entry module from path: {}", main_module_path);
+    Core::Logger::info("End Loading main entry module from path: {}", main_module_path);
 
     if(main_module_lib == nullptr)
     {
