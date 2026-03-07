@@ -44,20 +44,11 @@ Java_com_arieo_bootstrap_MainActivity_nativePrepareEngine(JNIEnv *env, jobject /
         
         LOGI("Received manifest file path from Java: %s", manifest_path_string.c_str());
 
-        int result = prepareEngine(manifest_path_string);
-        if(result == 0)
-        {
-            LOGI("Engine prepared successfully with manifest: %s", manifest_path_string.c_str());
-        }
-        else
-        {
-            LOGI("Failed to prepare engine with manifest: %s", manifest_path_string.c_str());
-        }
-
-        std::string main_module_name = getMainModulePath();
+        Arieo::Core::Manifest& manifest = prepareEngine(manifest_path_string);
+        std::string main_module_name = manifest.getEngineModulePath("main_module").string();
 
         env->ReleaseStringUTFChars(manifest_file_path, manifest_path);
-        return (result == 0) ? env->NewStringUTF(main_module_name.c_str()) : nullptr;
+        return env->NewStringUTF(main_module_name.c_str());
     }
 
     return nullptr;
