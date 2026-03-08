@@ -126,7 +126,14 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
             CXX_SOURCES
                 ${CMAKE_CURRENT_LIST_DIR}/private/src/*.cpp
     )
-    target_link_options(arieo_bootstrap PRIVATE "-sMAIN_MODULE=1" "-sASYNCIFY=1")
+    target_compile_options(arieo_bootstrap PRIVATE "-pthread")
+    target_link_options(arieo_bootstrap PRIVATE 
+        "-pthread"
+        "-sPROXY_TO_PTHREAD=1"
+        "-sMAIN_MODULE=1"
+        "-sFETCH=1"
+        "--pre-js=${CMAKE_CURRENT_LIST_DIR}/private/js/pre.js"
+    )
     set_target_properties(arieo_bootstrap PROPERTIES SUFFIX ".html")
 endif()
 
